@@ -1,4 +1,6 @@
-#include"TM4C123GH6PM.h"
+#include "TM4C123GH6PM.h"
+#include "TIVA_TIMER.h"
 int main(){
-    while(1);
+	Start_Timer();
+	while(1);
 }
