@@ -1,48 +1,63 @@
 #include "stdint.h"
-#include "tm4c123gh6pm.h"
+#include "TM4C123GH6PM.h"
 
 // the following definitions are references to specific bits in GPIO ports
+// where r's are connected to the rows of the keypad, while c's are the columns
+///////////////////////////////////////////////////////////////
+#define r0  *((volatile uint32_t *)0x40005020) 		//pb3 input to keypad
+#define r1  *((volatile uint32_t *)0x40005040)		//pb4 input
+#define r2  *((volatile uint32_t *)0x40004010)		//pa2 input
+#define r3  *((volatile uint32_t *)0x40004020)		//pa3 input
+#define c0  *((volatile uint32_t *)0x40004040)		//pa4 output from keypad
+#define c1  *((volatile uint32_t *)0x40004080) 		//pa5 output
+#define c2  *((volatile uint32_t *)0x40004100) 		//pa6 output
+#define c3  *((volatile uint32_t *)0x40004200)		//pa7 output
+/////////////////////////////////////////////////////////////////
 
 
-#define r0  *((volatile uint32_t *)0x40005020) 		//pb3
-#define r1  *((volatile uint32_t *)0x40005040)		//pb4
-#define r2  *((volatile uint32_t *)0x40004010)		//pa2
-#define r3  *((volatile uint32_t *)0x40004020)		//pa3
-#define c0  *((volatile uint32_t *)0x40004040)		//pa4
-#define c1  *((volatile uint32_t *)0x40004080) 		//pa5
-#define c2  *((volatile uint32_t *)0x40004100) 		//pa6
-#define c3  *((volatile uint32_t *)0x40004200)		//pa7
+
+
+// port A initialization	
+///////////////////////////////////////////
 
 void porTA_init()
 {
-	// port A
-	GPIO_PORTA_LOCK_R =0X4C4F434B; //IMP TO BE AFTER RCGCGPIO
-	/*DONT OPENE LOCK FOR PORT C USED FOR DEBUG AND MAY CAUSE DAMAGE TO
+	SYSCTL->RCGCGPIO |= 0x01;  // clock for port A and B// 00000011
+	while((SYSCTL->PRGPIO & 0x01) == 0);
+	GPIOA->LOCK =0X4C4F434B; //IMP TO BE AFTER RCGCGPIO
+	/*DONT OPEN LOCK FOR PORT C USED FOR DEBUG AND MAY COUSE DAMAGE 
 	THE TIVA*/
-	GPIO_PORTA_CR_R = 0xFF; 	// use all pins for port A
-	GPIO_PORTA_AFSEL_R = 0;		// no alternative functions
-	GPIO_PORTA_PCTL_R = 0; 		// control portA
-	GPIO_PORTA_AMSEL_R = 0; 	// no analog needed
-	GPIO_PORTA_DIR_R = 0X0C;	// FOR INPUT  0 AND 1 FOR OUTPUT  ->10.3 InitializationandConfiguration
-	GPIO_PORTA_DEN_R = 0XFF;	// digital pins 1 FOR DIGITAL
-	GPIO_PORTA_PUR_R = 0X00;	// pull down  for all pins 
+	GPIOA->CR =0xfd; // use all pins for port A
+	GPIOA->AFSEL =0;	//no alternatives 
+	GPIOA->PCTL =0; 	//control portA
+	GPIOA->AMSEL=0; 	//no analog needed
+	GPIOA->DIR=0X0d;	// FOR INPUT  0 AND 1 FOR OUTPUT  ->10.3 InitializationandConfiguration
+	GPIOA->DEN =0XFF;	//digital pins 1 FOR DIGITAL
+	GPIOA->PUR = 0X00;//pul up for all pins 
 }
+///////////////////////////////////////////////
 
+
+// port B initialization
+//////////////////////////////////////////////
 void porTB_init()
 {
-	// port B
-	GPIO_PORTB_LOCK_R =0X4C4F434B; //IMP TO BE AFTER RCGCGPIO
-	/*DONT OPENE LOCK FOR PORT C USED FOR DEBUG AND MAY CAUSE DAMAGE 
-	TO THE TIVA*/
-	GPIO_PORTB_CR_R =0xFF; 			// use all pins for port B
-	GPIO_PORTB_AFSEL_R |=0x03;	// alternative functions at PB0 & PB1
-	GPIO_PORTB_PCTL_R = (GPIO_PORTB_PCTL_R&0xffffff00)+0x00000011; 			//control portB
-	GPIO_PORTB_AMSEL_R=0; 			// no analog needed
-	GPIO_PORTB_DIR_R |=0X18;		// FOR INPUT  0 AND 1 FOR OUTPUT  ->10.3 InitializationandConfiguration
-	GPIO_PORTB_DEN_R =0XFF;			// digital pins 1 FOR DIGITAL
-	GPIO_PORTB_PUR_R = 0X00;		// pull down for all pins 
+	SYSCTL->RCGCGPIO |= 0x02;  // clock for port A and B// 00000011
+	while((SYSCTL->PRGPIO & 0x02) == 0);
+	GPIOB->LOCK =0X4C4F434B; //IMP TO BE AFTER RCGCGPIO
+	/*DONT OPEN LOCK FOR PORT C USED FOR DEBUG AND MAY COUSE DAMAGE 
+	THE TIVA*/
+	GPIOB->CR =0xff; // use all pins for port B
+	GPIOB->AFSEL =0;	//no alternatives 
+	GPIOB->PCTL =0; 	//control portA
+	GPIOB->AMSEL=0; 	//no analog needed
+	GPIOB->DIR=0Xff;	// FOR INPUT  0 AND 1 FOR OUTPUT  ->10.3 InitializationandConfiguration
+	GPIOB->DEN =0XFF;	//digital pins 1 FOR DIGITAL
+	GPIOB->PUR = 0X00;//pul up for all pins 
 }
+///////////////////////////////////////////////
 
+	
 // Keypad Code	
 // check which keypad row is being pressed after determining the column
 ////////////////////////////////////////////////////////////////
@@ -120,3 +135,4 @@ char getfromkeybad(){
 }
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
+
